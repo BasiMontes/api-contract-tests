@@ -71,6 +71,8 @@ Los IDs son fijos (`00000000-0000-4000-8000-000000000001` a `…000015`), así q
 
 ## Ejecutar
 
+Requiere Node 24 o superior (LTS activa).
+
 ```bash
 npm install
 npm run typecheck     # compila el servidor y las pruebas
