@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  title: API de reservas de pistas deportivas
+  version: 1.2.0
+  description: >
+    API de práctica para pruebas de contrato. La especificación es la fuente de verdad.
+    Las reglas de negocio que OpenAPI no expresa están en README.md, sección "Reglas de negocio".
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+  - name: Pistas
+  - name: Reservas
+
+paths:
+  /auth/registro:
+    post:
+      tags: [Auth]
+      summary: Registrar un usuario
+      description: El email es único sin distinguir mayúsculas y minúsculas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegistroRequest' }
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409':
+          description: El email ya está registrado (EMAIL_TAKEN)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Obtener un token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login correcto
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /pistas:
+    get:
+      tags: [Pistas]
+      summary: Listar pistas (público)
+      responses:
+        '200':
+          description: Lista de pistas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Pista' }
+
+  /pistas/{id}:
+    get:
+      tags: [Pistas]
+      summary: Obtener una pista (público)
+      parameters:
+        - $ref: '#/components/parameters/PistaId'
+      responses:
+        '200':
+          description: Pista encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pista' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /reservas:
+    get:
+      tags: [Reservas]
+      summary: Listar las reservas del usuario autenticado
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Reservas propias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Reserva' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Reservas]
+      summary: Crear una reserva
+      description: Aplica las reglas de horario, duración, pasado, solape y límites por usuario (ver README.md).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrearReservaRequest' }
+      responses:
+        '201':
+          description: Reserva creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reserva' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: >
+            Conflicto. Códigos posibles: SLOT_OCCUPIED, USER_OVERLAP,
+            DAILY_LIMIT_EXCEEDED, WEEKLY_LIMIT_EXCEEDED o CHAIN_LIMIT_EXCEEDED.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /reservas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ReservaId'
+    get:
+      tags: [Reservas]
+      summary: Obtener una reserva propia
+      description: Si la reserva no existe o pertenece a otro usuario, devuelve 404 con el mismo cuerpo.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Reserva encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reserva' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Reservas]
+      summary: Cancelar una reserva propia
+      description: >
+        Cancela una reserva activa que todavía no ha empezado. Si no existe o es ajena, 404.
+        Si ya está cancelada, 409 RESERVATION_NOT_ACTIVE; si ya ha empezado, 409 RESERVATION_STARTED.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Reserva cancelada
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: RESERVATION_NOT_ACTIVE o RESERVATION_STARTED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PistaId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ReservaId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    RegistroRequest:
+      type: object
+      required: [email, password, nombre]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        nombre: { type: string, minLength: 1 }
+      additionalProperties: false
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+      additionalProperties: false
+
+    LoginResponse:
+      type: object
+      required: [token, expiresIn]
+      properties:
+        token: { type: string }
+        expiresIn: { type: integer, example: 3600, description: Segundos hasta la caducidad }
+
+    Usuario:
+      type: object
+      required: [id, email, nombre]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        nombre: { type: string }
+      description: La contraseña nunca se devuelve.
+
+    Pista:
+      type: object
+      required: [id, nombre, deporte]
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string, example: Pista 1 }
+        deporte:
+          type: string
+          enum: [padel, tenis, futbol7, futbol11, baloncesto]
+
+    CrearReservaRequest:
+      type: object
+      required: [pistaId, inicio, fin]
+      properties:
+        pistaId: { type: string, format: uuid }
+        inicio: { type: string, format: date-time, description: ISO 8601 en UTC }
+        fin: { type: string, format: date-time, description: ISO 8601 en UTC }
+      additionalProperties: false
+
+    Reserva:
+      type: object
+      required: [id, pistaId, usuarioId, inicio, fin, estado]
+      properties:
+        id: { type: string, format: uuid }
+        pistaId: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        inicio: { type: string, format: date-time }
+        fin: { type: string, format: date-time }
+        estado: { type: string, enum: [activa, cancelada] }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - INVALID_CREDENTIALS
+            - UNAUTHORIZED
+            - EMAIL_TAKEN
+            - NOT_FOUND
+            - SLOT_OCCUPIED
+            - USER_OVERLAP
+            - DAILY_LIMIT_EXCEEDED
+            - WEEKLY_LIMIT_EXCEEDED
+            - CHAIN_LIMIT_EXCEEDED
+            - RESERVATION_NOT_ACTIVE
+            - RESERVATION_STARTED
+            - OUTSIDE_OPENING_HOURS
+            - PAST_RESERVATION
+        message: { type: string }
+
+  responses:
+    ValidationError:
+      description: Datos de entrada no válidos (VALIDATION_ERROR, OUTSIDE_OPENING_HOURS o PAST_RESERVATION)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Token ausente, mal formado, inválido o caducado (UNAUTHORIZED)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso no encontrado o no accesible para el usuario autenticado (NOT_FOUND)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
