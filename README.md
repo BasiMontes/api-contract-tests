@@ -71,7 +71,7 @@ Los IDs son fijos (`00000000-0000-4000-8000-000000000001` a `…000015`), así q
 
 ## Ejecutar
 
-Requiere Node 24 o superior (LTS activa).
+Requiere Node 24 o superior (LTS activa). El archivo `.nvmrc` fija la versión: con `nvm use` o `fnm use` se selecciona sola.
 
 ```bash
 npm install
