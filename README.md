@@ -4,9 +4,9 @@
 
 Pruebas de contrato sobre una API de práctica para reservar pistas deportivas (Node.js, Express y JWT). La especificación `openapi.yaml` es la fuente de verdad: las pruebas comprueban que el servidor cumple lo que promete, tanto en la forma de las respuestas como en las reglas de negocio.
 
-La API es de práctica: no tiene base de datos ni se despliega en ningún sitio. El producto de este repositorio son las pruebas.
+La API es de práctica: guarda los datos en memoria y solo se ejecuta en local. Lo que se publica en internet es su documentación. El producto de este repositorio son las pruebas.
 
-**Estado:** especificación 1.3.0, servidor de práctica y 51 pruebas de contrato, todas en verde en CI.
+**Estado:** especificación 1.3.1, servidor de práctica y 54 pruebas de contrato, todas en verde en CI.
 
 ## Qué demuestra
 
@@ -19,7 +19,7 @@ La API es de práctica: no tiene base de datos ni se despliega en ningún sitio.
 
 La especificación se publica en GitHub Pages con Swagger UI: https://basimontes.github.io/api-contract-tests/
 
-Se actualiza en cada push a `main` si las pruebas pasan. "Try it out" apunta a `localhost:3000`, así que solo funciona con el servidor levantado en tu equipo.
+Se actualiza en cada push a `main` si las pruebas pasan. "Try it out" apunta a `localhost:3000`, así que solo funciona con el servidor levantado en tu equipo (ver [Probar la API](#probar-la-api)).
 
 ## Estructura
 
@@ -89,6 +89,44 @@ npm run server        # arranca solo la API en http://localhost:3000
 
 Variables opcionales: `PORT` (puerto del servidor), `JWT_SECRET` (clave para firmar los tokens) y `API_URL` (prueba contra un servidor ya levantado en otra dirección).
 
+## Probar la API
+
+Levanta el servidor con `npm run server` y deja la terminal abierta. Después puedes probar con `curl` o desde la documentación.
+
+**Con curl**
+
+```bash
+# 1. Registro (la API no trae usuarios de ejemplo)
+curl -X POST http://localhost:3000/auth/registro \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ana@test.es","password":"clave-segura-123","nombre":"Ana"}'
+
+# 2. Login: devuelve { "token": "...", "expiresIn": 3600 }
+curl -X POST http://localhost:3000/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ana@test.es","password":"clave-segura-123"}'
+
+# 3. Pistas (públicas, sin token)
+curl http://localhost:3000/pistas
+
+# 4. Reserva (requiere token). Las fechas van en UTC: las 10:00 de Madrid en noviembre son 09:00Z
+TOKEN="pega-aqui-el-token"
+curl -X POST http://localhost:3000/reservas \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"pistaId":"00000000-0000-4000-8000-000000000001","inicio":"2026-11-02T09:00:00Z","fin":"2026-11-02T10:00:00Z"}'
+```
+
+**Desde la documentación**
+
+1. Abre la documentación en local o en https://basimontes.github.io/api-contract-tests/ con el servidor levantado.
+2. Registra un usuario con `POST /auth/registro` y obtén el token con `POST /auth/login`.
+3. Pulsa **Authorize** y pega el valor de `token`, sin comillas. Swagger añade el prefijo `Bearer`.
+
+El token caduca a los 60 minutos: cuando deje de funcionar, vuelve a hacer login.
+
+**CORS:** el servidor solo acepta peticiones desde `https://basimontes.github.io`, `http://localhost:3000` y `http://127.0.0.1:3000`. Desde otro origen, el navegador bloquea la respuesta, aunque el servidor funcione.
+
 ## Modo práctica
 
 Con `MODO_PRACTICA=1`, el servidor acepta la cabecera `X-Practica-Ahora` (fecha ISO 8601) como hora de referencia para las reglas de pasado y de cancelación. Fuera de ese modo la cabecera se ignora y se usa el reloj real.
@@ -117,6 +155,7 @@ En local, Playwright reutiliza un servidor que ya esté en el puerto 3000. Si es
 
 ## Versiones
 
+- **1.3.1:** el login incorrecto se documenta como 401 `INVALID_CREDENTIALS` (antes usaba la descripción genérica de tokens). El servidor permite CORS desde la documentación pública.
 - **1.3.0:** los esquemas de respuesta no admiten campos no documentados (`additionalProperties: false`). Así una contraseña filtrada o un campo nuevo hace fallar la prueba de contrato.
 - **1.2.0:** un código de error por cada límite (`DAILY_LIMIT_EXCEEDED`, `WEEKLY_LIMIT_EXCEEDED`, `CHAIN_LIMIT_EXCEEDED`) en lugar de `LIMIT_EXCEEDED` con `details`. Se añade `USER_OVERLAP`.
 - **1.1.0:** primera versión con reglas de negocio cerradas.

@@ -88,3 +88,30 @@ code { font-size: 0.92em; background: var(--card); border: 1px solid var(--line)
   .top nav { margin-left: 0; }
   .btn-linkedin { display: none; }
 }
+
+/* Ajustes de encaje: la cabecera ya muestra título, versión y descripción; Swagger no los repite. */
+.swagger-ui { font-size: 15px; color: var(--ink); }
+.swagger-ui .info { display: none; }
+.swagger-ui .scheme-container { margin: 0 0 1.5rem; padding: 1rem 1.25rem; }
+.swagger-ui .opblock-summary-method { font-weight: 700; letter-spacing: 0.02em; border-radius: 8px; }
+.swagger-ui .opblock.opblock-get .opblock-summary-method { background: var(--cobalt); }
+.swagger-ui .opblock.opblock-post .opblock-summary-method { background: var(--moss); }
+.swagger-ui .opblock.opblock-delete .opblock-summary-method { background: var(--ink-soft); }
+.swagger-ui .opblock.opblock-get, .swagger-ui .opblock.opblock-post, .swagger-ui .opblock.opblock-delete {
+  background: var(--card); border-color: var(--line);
+}
+.swagger-ui .opblock.opblock-get .opblock-summary, .swagger-ui .opblock.opblock-post .opblock-summary,
+.swagger-ui .opblock.opblock-delete .opblock-summary { border-color: var(--line); }
+.swagger-ui .opblock-tag { font-size: 1.25rem; font-weight: 900; padding: 0.75rem 0; }
+.swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-external-docs-wrapper p { color: var(--ink-soft); }
+.swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 { color: var(--ink); }
+.swagger-ui .model-box, .swagger-ui section.models { border-color: var(--line); }
+.swagger-ui section.models { border-radius: var(--radius); background: var(--card); }
+
+/* Botón de volver: la documentación es una página aparte de la web personal */
+.btn-back {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.5rem;
+  padding: 0.45rem 1rem; border-radius: 999px; border: 1.5px solid var(--ink);
+  background: var(--card); color: var(--ink); text-decoration: none; font-weight: 700;
+}
+.btn-back:hover { background: var(--paper); text-decoration: none; }
