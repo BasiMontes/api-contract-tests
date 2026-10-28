@@ -47,3 +47,18 @@ OpenAPI no expresa bien estas reglas, así que se documentan aquí y se prueban 
 
 - 1.2.0: un código de error por cada límite (`DAILY_LIMIT_EXCEEDED`, `WEEKLY_LIMIT_EXCEEDED`, `CHAIN_LIMIT_EXCEEDED`) en lugar de `LIMIT_EXCEEDED` con `details`. Se añade `USER_OVERLAP`.
 - 1.1.0: primera versión con reglas de negocio cerradas.
+
+## Cómo ejecutar
+
+```bash
+npm install
+npm run typecheck     # compila el servidor
+npm run server        # arranca la API en http://localhost:3000 (PORT y JWT_SECRET son opcionales)
+```
+
+## Decisiones de implementación
+
+- Los IDs que no son UUID en la ruta devuelven 404 `NOT_FOUND`, igual que un UUID inexistente.
+- Las reservas se validan en este orden: formato y duración (400 `VALIDATION_ERROR`), pasado (400 `PAST_RESERVATION`), horario (400 `OUTSIDE_OPENING_HOURS`), solape en la pista (409 `SLOT_OCCUPIED`), solape del usuario (409 `USER_OVERLAP`), límite diario, semanal y de cadena.
+- El email se guarda en minúsculas, y la respuesta de registro lo devuelve así.
+- Un error inesperado devuelve 500 con `INTERNAL_ERROR`. Este código no está en `openapi.yaml`: queda pendiente decidir si se documenta o se cambia.
