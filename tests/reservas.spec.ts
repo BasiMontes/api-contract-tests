@@ -408,3 +408,108 @@ test.describe('Listado y autenticación', () => {
     await esperarError(res, 'delete', '/reservas/{id}', 401, 'UNAUTHORIZED');
   });
 });
+
+// ---------- Casos añadidos: bordes de duración, cadena, límites y cambio de horario ----------
+
+function ultimoDomingoDeMarzo(anio: number): string {
+  for (let d = 31; d >= 25; d--) {
+    const f = new Date(Date.UTC(anio, 2, d));
+    if (f.getUTCDay() === 0) return f.toISOString().slice(0, 10);
+  }
+  throw new Error('no hay domingo en la última semana de marzo');
+}
+
+test.describe('Duración en los límites exactos', () => {
+  test('60 y 120 minutos se aceptan (201)', async ({ request }) => {
+    const { token } = await crearUsuario(request);
+    const fecha = diaAleatorio();
+    await esperarReservaCreada(
+      await reservar(request, token, pistaId(1), fecha, '09:00', '10:00'),
+      madridISO(fecha, '09:00'),
+      madridISO(fecha, '10:00'),
+    );
+    await esperarReservaCreada(
+      await reservar(request, token, pistaId(2), fecha, '11:00', '13:00'),
+      madridISO(fecha, '11:00'),
+      madridISO(fecha, '13:00'),
+    );
+  });
+});
+
+test.describe('Cadena de reservas pegadas', () => {
+  test('una reserva que une dos existentes forma cadena de tres y devuelve 409 CHAIN_LIMIT_EXCEEDED', async ({ request }) => {
+    const fecha = diaAleatorio();
+    const ana = await crearUsuario(request);
+
+    // Dos reservas con hueco entre ellas (10:00-11:00 libre): no forman cadena.
+    expect((await reservar(request, ana.token, pistaId(1), fecha, '09:00', '10:00')).status()).toBe(201);
+    expect((await reservar(request, ana.token, pistaId(3), fecha, '11:00', '12:00')).status()).toBe(201);
+
+    // La nueva rellena el hueco: queda 09-10, 10-11 y 11-12 pegadas.
+    const res = await reservar(request, ana.token, pistaId(2), fecha, '10:00', '11:00');
+    await esperarError(res, 'post', '/reservas', 409, 'CHAIN_LIMIT_EXCEEDED');
+  });
+});
+
+test.describe('Límites y el paso de un día a otro', () => {
+  test('tras llegar a 3 reservas en un día, el día siguiente admite reservas (201)', async ({ request }) => {
+    const fecha = diaAleatorio();
+    const siguiente = sumarDias(fecha, 1);
+    const ana = await crearUsuario(request);
+
+    expect((await reservar(request, ana.token, pistaId(1), fecha, '09:00', '10:00')).status()).toBe(201);
+    expect((await reservar(request, ana.token, pistaId(1), fecha, '11:00', '12:00')).status()).toBe(201);
+    expect((await reservar(request, ana.token, pistaId(1), fecha, '16:00', '17:00')).status()).toBe(201);
+
+    await esperarReservaCreada(
+      await reservar(request, ana.token, pistaId(1), siguiente, '09:00', '10:00'),
+      madridISO(siguiente, '09:00'),
+      madridISO(siguiente, '10:00'),
+    );
+  });
+
+  test('el límite semanal se reinicia el lunes siguiente (201)', async ({ request }) => {
+    const lunes = lunesDeSemana(diaAleatorio());
+    const ana = await crearUsuario(request);
+
+    // Diez reservas en la semana: lunes a viernes, dos por día, sin cadena.
+    for (let dia = 0; dia < 5; dia++) {
+      const fecha = sumarDias(lunes, dia);
+      expect((await reservar(request, ana.token, pistaId(1), fecha, '09:00', '10:00')).status()).toBe(201);
+      expect((await reservar(request, ana.token, pistaId(1), fecha, '16:00', '17:00')).status()).toBe(201);
+    }
+
+    // El último hueco de la semana (domingo) ya cuenta como undécima: 409.
+    const domingo = sumarDias(lunes, 6);
+    await esperarError(
+      await reservar(request, ana.token, pistaId(1), domingo, '20:00', '21:00'),
+      'post',
+      '/reservas',
+      409,
+      'WEEKLY_LIMIT_EXCEEDED',
+    );
+
+    // El lunes siguiente empieza una semana nueva: 201.
+    const lunesSiguiente = sumarDias(lunes, 7);
+    await esperarReservaCreada(
+      await reservar(request, ana.token, pistaId(1), lunesSiguiente, '09:00', '10:00'),
+      madridISO(lunesSiguiente, '09:00'),
+      madridISO(lunesSiguiente, '10:00'),
+    );
+  });
+});
+
+test.describe('Cambio de horario (Europe/Madrid)', () => {
+  test('en el día del cambio a horario de verano, 10:00 de Madrid es 08:00 UTC', async ({ request }) => {
+    const anio = 2040 + Math.floor(Math.random() * 50);
+    const fecha = ultimoDomingoDeMarzo(anio);
+    const { token } = await crearUsuario(request);
+
+    // Valor esperado escrito a mano: después del cambio, Madrid va en UTC+2.
+    await esperarReservaCreada(
+      await reservar(request, token, pistaId(1), fecha, '10:00', '11:00'),
+      `${fecha}T08:00:00.000Z`,
+      `${fecha}T09:00:00.000Z`,
+    );
+  });
+});

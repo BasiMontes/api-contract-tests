@@ -136,3 +136,58 @@ test.describe('Login incorrecto', () => {
     expect((await res.json()).code).toBe('INVALID_CREDENTIALS');
   });
 });
+
+test.describe('Entrada malformada y login', () => {
+  test('un JSON mal formado en el login devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/login', {
+      headers: { 'Content-Type': 'application/json' },
+      data: '{esto-no-es-json',
+    });
+    expect(res.status()).toBe(400);
+    expect(await declarado('post', '/auth/login', 400)).toBe(true);
+    const cuerpo = await res.json();
+    expect(await erroresDeEsquema('Error', cuerpo)).toEqual([]);
+    expect(cuerpo.code).toBe('VALIDATION_ERROR');
+  });
+
+  test('un login sin contraseña devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/login', { data: { email: emailUnico() } });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).code).toBe('VALIDATION_ERROR');
+  });
+
+  test('el login funciona con el email en mayúsculas (200)', async ({ request }) => {
+    const email = emailUnico();
+    await registrar(request, email);
+    const res = await request.post('/auth/login', { data: { email: email.toUpperCase(), password: PASSWORD } });
+    expect(res.status()).toBe(200);
+  });
+});
+
+test.describe('Validaciones de campos', () => {
+  test('un nombre vacío en el registro devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/registro', {
+      data: { email: emailUnico(), password: PASSWORD, nombre: '   ' },
+    });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).code).toBe('VALIDATION_ERROR');
+  });
+
+  test('un email mal formado en el login devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/login', { data: { email: 'no-es-un-email', password: PASSWORD } });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).code).toBe('VALIDATION_ERROR');
+  });
+
+  test('una contraseña que no es texto en el login devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/login', { data: { email: emailUnico(), password: 12345678 } });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).code).toBe('VALIDATION_ERROR');
+  });
+
+  test('un cuerpo que no es un objeto JSON devuelve 400 VALIDATION_ERROR', async ({ request }) => {
+    const res = await request.post('/auth/registro', { data: [1, 2, 3] });
+    expect(res.status()).toBe(400);
+    expect((await res.json()).code).toBe('VALIDATION_ERROR');
+  });
+});

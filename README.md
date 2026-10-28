@@ -6,7 +6,7 @@ Pruebas de contrato sobre una API de práctica para reservar pistas deportivas (
 
 La API es de práctica: guarda los datos en memoria y solo se ejecuta en local. Lo que se publica en internet es su documentación. El producto de este repositorio son las pruebas.
 
-**Estado:** especificación 1.3.1, servidor de práctica y 54 pruebas de contrato, todas en verde en CI.
+**Estado:** especificación 1.3.1, servidor de práctica y 70 pruebas de contrato, todas en verde en CI.
 
 ## Qué demuestra
 
@@ -89,6 +89,32 @@ npm run server        # arranca solo la API en http://localhost:3000
 
 Variables opcionales: `PORT` (puerto del servidor), `JWT_SECRET` (clave para firmar los tokens) y `API_URL` (prueba contra un servidor ya levantado en otra dirección).
 
+## Cobertura
+
+Medida sobre el código compilado del servidor (`dist/src/server`), con las 70 pruebas en marcha:
+
+| Métrica | Resultado |
+|---|---|
+| Sentencias | 94,8 % |
+| Ramas | 90,4 % |
+| Funciones | 91,3 % |
+
+Las líneas sin cubrir son la ruta inexistente (404 `NOT_FOUND`) y el manejador de error (500 `INTERNAL_ERROR`). Ninguna de las dos respuestas está en `openapi.yaml`, así que no se prueban hasta decidir si se documentan. Parte del 91 % de funciones corresponde a código que genera el compilador (helpers de importación), no a lógica del servidor.
+
+Para repetir la medición (no está en CI):
+
+```bash
+npm install
+npx tsc -p .                                        # compila a dist/
+NODE_V8_COVERAGE=./coverage-raw MODO_PRACTICA=1 PORT=3200 node dist/src/server/index.js &
+API_URL=http://localhost:3200 npm test              # las pruebas contra ese servidor
+kill -TERM %1                                       # cierre limpio: escribe la cobertura
+npx -y c8@10 report --temp-directory ./coverage-raw --include "dist/src/server/**" --reporter=text
+rm -rf coverage-raw dist
+```
+
+El servidor maneja `SIGTERM` y `SIGINT` para cerrarse limpiamente; sin eso no se guarda la cobertura.
+
 ## Probar la API
 
 Levanta el servidor con `npm run server` y deja la terminal abierta. Después puedes probar con `curl` o desde la documentación.
@@ -155,6 +181,7 @@ En local, Playwright reutiliza un servidor que ya esté en el puerto 3000. Si es
 
 ## Versiones
 
+- **1.3.1 (pruebas):** 70 pruebas. Se añaden casos de duración en los límites, cadena que une dos reservas, límite diario y semanal al cambiar de día, cambio de horario de marzo, tokens rechazados (sin Bearer, firma falsa, caducado, sin sujeto) y validaciones de campos.
 - **1.3.1:** el login incorrecto se documenta como 401 `INVALID_CREDENTIALS` (antes usaba la descripción genérica de tokens). El servidor permite CORS desde la documentación pública.
 - **1.3.0:** los esquemas de respuesta no admiten campos no documentados (`additionalProperties: false`). Así una contraseña filtrada o un campo nuevo hace fallar la prueba de contrato.
 - **1.2.0:** un código de error por cada límite (`DAILY_LIMIT_EXCEEDED`, `WEEKLY_LIMIT_EXCEEDED`, `CHAIN_LIMIT_EXCEEDED`) en lugar de `LIMIT_EXCEEDED` con `details`. Se añade `USER_OVERLAP`.
