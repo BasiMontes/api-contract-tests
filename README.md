@@ -15,6 +15,12 @@ La API es de práctica: no tiene base de datos ni se despliega en ningún sitio.
 - **Comprobación de las pruebas:** las pruebas se han validado rompiendo reglas a propósito en el servidor, y deben fallar cuando eso ocurre.
 - **CI en cada push y pull request** con GitHub Actions.
 
+## Documentación
+
+La especificación se publica en GitHub Pages con Swagger UI: https://basimontes.github.io/api-contract-tests/
+
+Se actualiza en cada push a `main` si las pruebas pasan. "Try it out" apunta a `localhost:3000`, así que solo funciona con el servidor levantado en tu equipo.
+
 ## Estructura
 
 ```
@@ -25,6 +31,7 @@ tests/pistas.spec.ts            pistas públicas y seed
 tests/reservas.spec.ts          reglas de reservas, cancelación y autenticación
 tests/contrato-validador.spec.ts  comprueba que el validador rechaza lo que debe rechazar
 tests/support/                  validación contra openapi.yaml y utilidades de reservas
+docs/index.html                 Swagger UI para GitHub Pages (openapi.yaml se copia al publicar)
 .github/workflows/ci.yml        CI: typecheck y pruebas
 ```
 

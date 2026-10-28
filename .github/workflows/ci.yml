@@ -35,3 +35,43 @@ jobs:
         run: npm test
         env:
           CI: true
+
+  # Publica la documentación (Swagger UI + openapi.yaml) en GitHub Pages.
+  # Solo desde main y solo si las pruebas de contrato han pasado.
+  pages:
+    needs: contract-tests
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # La especificación se copia al publicar, para que sea siempre la de main y no haya dos copias.
+      - name: Preparar documentación
+        run: cp openapi.yaml docs/openapi.yaml
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        name: Desplegar
+        uses: actions/deploy-pages@v4
