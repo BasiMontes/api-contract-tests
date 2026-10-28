@@ -12,7 +12,7 @@ La API es de práctica: guarda los datos en memoria y solo se ejecuta en local. 
 
 - **Contrato como fuente de verdad:** las pruebas leen `openapi.yaml` directamente, no una copia. Cada respuesta se valida contra su esquema, con `additionalProperties: false`, así que un campo no documentado hace fallar la prueba.
 - **Reglas de negocio que OpenAPI no expresa:** horario, solapes, límites por usuario y cancelación, documentados abajo y probados uno por uno.
-- **Comprobación de las pruebas:** las pruebas se han validado rompiendo reglas a propósito en el servidor, y deben fallar cuando eso ocurre.
+- **Comprobación de las pruebas:** varias reglas clave (límite diario, cadena, reapertura, inicio de reserva, CORS y el enum de errores) se han validado rompiéndolas a propósito en el servidor; las pruebas fallan cuando eso ocurre.
 - **CI en cada push y pull request** con GitHub Actions.
 
 ## Documentación
