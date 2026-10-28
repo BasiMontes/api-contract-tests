@@ -19,6 +19,24 @@ export function createApp(store: Store = createStore()) {
   const app = express();
   app.use(express.json());
 
+  // CORS: la documentación pública (GitHub Pages) llama a la API. Solo se permiten los orígenes listados.
+  const ORIGENES_PERMITIDOS = ['https://basimontes.github.io', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+  app.use((req, res, next) => {
+    const origen = req.headers.origin;
+    if (origen && ORIGENES_PERMITIDOS.includes(origen)) {
+      res.setHeader('Access-Control-Allow-Origin', origen);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Type');
+    }
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
+  });
+
   function requireAuth(req: Request, res: Response, next: NextFunction): void {
     const header = req.headers.authorization ?? '';
     if (!header.startsWith('Bearer ')) {

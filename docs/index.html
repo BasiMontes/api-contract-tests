@@ -42,6 +42,15 @@
       <span class="pill">Playwright + TypeScript</span>
     </div>
     <p class="note">Las reglas que OpenAPI no expresa (horario, solapes, límites por usuario y cancelación) están en la sección "Reglas de negocio" del <a href="https://github.com/BasiMontes/api-contract-tests#reglas-de-negocio" rel="noopener" target="_blank">README</a>, junto con el repositorio de las pruebas.</p>
+    <div class="note">
+      <p><strong>Cómo probar las reservas desde esta página</strong></p>
+      <ol>
+        <li>Levanta el servidor en tu equipo: <code>npm run server</code>.</li>
+        <li>Regístrate con <code>POST /auth/registro</code> (email, contraseña de 8 o más caracteres y nombre).</li>
+        <li>Obtén el token con <code>POST /auth/login</code>. Copia solo el valor de <code>token</code>, sin comillas.</li>
+        <li>Pulsa <strong>Authorize</strong> arriba a la derecha y pega el token. Swagger añade el prefijo <code>Bearer</code> solo.</li>
+      </ol>
+    </div>
     <p class="note"><strong>Probar desde esta página:</strong> "Try it out" envía las peticiones a <code>http://localhost:3000</code>. Solo funciona si tienes el servidor levantado (<code>npm run server</code>).</p>
   </main>
 

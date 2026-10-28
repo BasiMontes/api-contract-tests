@@ -105,3 +105,34 @@ test.describe('POST /auth/login', () => {
     expect(await sinUsuario.json()).toEqual(await conClaveMala.json());
   });
 });
+
+test.describe('CORS para la documentación pública', () => {
+  test('una petición desde basimontes.github.io recibe la cabecera Access-Control-Allow-Origin', async ({ request }) => {
+    const res = await request.fetch('/auth/login', {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'https://basimontes.github.io',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+    expect(res.headers()['access-control-allow-origin']).toBe('https://basimontes.github.io');
+    expect(res.headers()['access-control-allow-headers']).toContain('Authorization');
+  });
+
+  test('un origen no listado no recibe cabecera CORS', async ({ request }) => {
+    const res = await request.fetch('/pistas', { headers: { Origin: 'https://ejemplo-malicioso.com' } });
+    expect(res.headers()['access-control-allow-origin']).toBeUndefined();
+  });
+});
+
+test.describe('Login incorrecto', () => {
+  test('la especificación documenta 401 INVALID_CREDENTIALS con su descripción propia', async ({ request }) => {
+    const email = emailUnico();
+    await registrar(request, email);
+    const res = await request.post('/auth/login', { data: { email, password: 'otra-clave-999' } });
+    expect(res.status()).toBe(401);
+    expect(await declarado('post', '/auth/login', 401)).toBe(true);
+    expect((await res.json()).code).toBe('INVALID_CREDENTIALS');
+  });
+});
