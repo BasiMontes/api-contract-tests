@@ -2,7 +2,7 @@
 
 Pruebas de contrato sobre una API de práctica de reservas de pistas deportivas (Node.js + Express + JWT). La especificación en `openapi.yaml` es la fuente de verdad: las pruebas comprueban que el servidor cumple lo que promete.
 
-Estado: especificación 1.2.0 redactada. Servidor y pruebas pendientes.
+Estado: especificación 1.3.0, servidor de práctica y primeras pruebas de contrato (16, en verde).
 
 ## Reglas de negocio
 
@@ -33,7 +33,7 @@ OpenAPI no expresa bien estas reglas, así que se documentan aquí y se prueban 
 - Email único sin distinguir mayúsculas. Duplicado: 409 `EMAIL_TAKEN`.
 - Pistas y su consulta son públicas. Reservas siempre requieren token JWT (caduca a los 60 minutos).
 
-## Seed (14 pistas, fijas)
+## Seed (15 pistas, fijas)
 
 | Deporte | Cantidad |
 |---|---|
@@ -45,8 +45,19 @@ OpenAPI no expresa bien estas reglas, así que se documentan aquí y se prueban 
 
 ## Versiones
 
+- 1.3.0: los esquemas de respuesta no admiten campos no documentados (`additionalProperties: false`). Así una contraseña filtrada o un campo nuevo hace fallar la prueba de contrato.
 - 1.2.0: un código de error por cada límite (`DAILY_LIMIT_EXCEEDED`, `WEEKLY_LIMIT_EXCEEDED`, `CHAIN_LIMIT_EXCEEDED`) en lugar de `LIMIT_EXCEEDED` con `details`. Se añade `USER_OVERLAP`.
 - 1.1.0: primera versión con reglas de negocio cerradas.
+
+## Pruebas
+
+```bash
+npm test                           # arranca el servidor local y ejecuta las pruebas
+API_URL=http://otro-host npm test  # prueba contra un servidor ya levantado
+```
+
+- `tests/auth.spec.ts` y `tests/pistas.spec.ts`: contrato de cada operación contra `openapi.yaml`.
+- `tests/contrato-validador.spec.ts`: comprueba que el validador rechaza lo que debe rechazar.
 
 ## Cómo ejecutar
 
