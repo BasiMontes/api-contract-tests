@@ -6,7 +6,7 @@ Pruebas de contrato sobre una API de práctica para reservar pistas deportivas (
 
 La API es de práctica: guarda los datos en memoria y solo se ejecuta en local. Lo que se publica en internet es su documentación. El producto de este repositorio son las pruebas.
 
-**Estado:** especificación 1.3.1, servidor de práctica y 70 pruebas de contrato, todas en verde en CI.
+**Estado:** especificación 1.3.1, servidor de práctica y 73 pruebas de contrato, todas en verde en CI.
 
 ## Qué demuestra
 
@@ -91,15 +91,15 @@ Variables opcionales: `PORT` (puerto del servidor), `JWT_SECRET` (clave para fir
 
 ## Cobertura
 
-Medida sobre el código compilado del servidor (`dist/src/server`), con las 70 pruebas en marcha:
+Medida sobre el código compilado del servidor (`dist/src/server`), con las 73 pruebas en marcha:
 
 | Métrica | Resultado |
 |---|---|
-| Sentencias | 94,8 % |
-| Ramas | 90,4 % |
+| Sentencias | 95,1 % |
+| Ramas | 90,5 % |
 | Funciones | 91,3 % |
 
-Las líneas sin cubrir son la ruta inexistente (404 `NOT_FOUND`) y el manejador de error (500 `INTERNAL_ERROR`). Ninguna de las dos respuestas está en `openapi.yaml`, así que no se prueban hasta decidir si se documentan. Parte del 91 % de funciones corresponde a código que genera el compilador (helpers de importación), no a lógica del servidor.
+La única línea de lógica sin ejecutar es el manejador del error 500 (`INTERNAL_ERROR`): no se puede provocar desde fuera sin inyectar un fallo. Su respuesta sí está documentada y se prueba que el código es válido en el contrato. Parte del 91 % de funciones corresponde a código que genera el compilador (helpers de importación), no a lógica del servidor.
 
 Para repetir la medición (no está en CI):
 
@@ -175,12 +175,13 @@ En local, Playwright reutiliza un servidor que ya esté en el puerto 3000. Si es
 ## Limitaciones conocidas
 
 - **Almacenamiento en memoria:** los datos se pierden al reiniciar el servidor.
-- **Error 500:** un error inesperado devuelve `INTERNAL_ERROR`, un código que no está en `openapi.yaml`. Hay que documentarlo o cambiarlo; de momento no hay prueba que lo cubra.
+- **Error 500:** un error inesperado devuelve `INTERNAL_ERROR`. Está documentado como respuesta por defecto (`default`) y el código forma parte del esquema `Error`, pero no hay forma de provocarlo desde las pruebas sin inyectar un fallo.
 - **Sin límite de peticiones ni protección contra fuerza bruta** en el login.
 - **Modo práctica:** la cabecera de reloj es un atajo de pruebas, no un mecanismo que deba existir en una API real.
 
 ## Versiones
 
+- **1.3.2:** respuestas por defecto en todas las operaciones (`default`): 500 `INTERNAL_ERROR` y 404 `NOT_FOUND` para rutas inexistentes. Se añade `INTERNAL_ERROR` al enum de `Error`.
 - **1.3.1 (pruebas):** 70 pruebas. Se añaden casos de duración en los límites, cadena que une dos reservas, límite diario y semanal al cambiar de día, cambio de horario de marzo, tokens rechazados (sin Bearer, firma falsa, caducado, sin sujeto) y validaciones de campos.
 - **1.3.1:** el login incorrecto se documenta como 401 `INVALID_CREDENTIALS` (antes usaba la descripción genérica de tokens). El servidor permite CORS desde la documentación pública.
 - **1.3.0:** los esquemas de respuesta no admiten campos no documentados (`additionalProperties: false`). Así una contraseña filtrada o un campo nuevo hace fallar la prueba de contrato.

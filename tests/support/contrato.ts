@@ -32,3 +32,21 @@ export async function declarado(metodo: string, ruta: string, status: number): P
   const operacion = doc.paths[ruta]?.[metodo.toLowerCase()];
   return Boolean(operacion?.responses?.[String(status)]);
 }
+
+/** Operaciones de la especificación como pares [método, ruta]. */
+export async function operaciones(): Promise<[string, string][]> {
+  const doc = await cargarEspecificacion();
+  const resultado: [string, string][] = [];
+  for (const [ruta, valor] of Object.entries<any>(doc.paths)) {
+    for (const metodo of ['get', 'post', 'put', 'delete', 'patch']) {
+      if (valor[metodo]) resultado.push([metodo, ruta]);
+    }
+  }
+  return resultado;
+}
+
+/** ¿Declara la operación una respuesta por defecto (cualquier otro código)? */
+export async function tieneRespuestaPorDefecto(metodo: string, ruta: string): Promise<boolean> {
+  const doc = await cargarEspecificacion();
+  return Boolean(doc.paths[ruta]?.[metodo.toLowerCase()]?.responses?.default);
+}
