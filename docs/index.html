@@ -3,24 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>API de reservas de pistas · documentación</title>
+  <title>API de reservas de pistas · documentación | Basilio Montes</title>
+  <meta name="description" content="Documentación de la API de práctica de reservas de pistas deportivas, con su especificación OpenAPI 1.3.0.">
+  <meta name="theme-color" content="#FFFEF5">
+  <link rel="icon" type="image/svg+xml" href="https://basimontes.github.io/favicon.svg">
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&amp;display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
-  <style>
-    body { margin: 0; background: #fff; }
-    .intro { max-width: 960px; margin: 24px auto 0; padding: 0 16px; font-family: system-ui, sans-serif; color: #1b1b1b; }
-    .intro p { line-height: 1.5; }
-    .intro a { color: #1f4fd1; }
-  </style>
+  <link rel="stylesheet" href="./estilos.css">
 </head>
 <body>
-  <div class="intro">
+  <header class="top-bar">
+    <div class="top">
+      <a class="me" href="https://basimontes.github.io/">
+        <span aria-hidden="true" class="avatar"><img alt="" width="40" height="40" src="https://basimontes.github.io/foto.jpg" onerror="this.remove()"><span>BM</span></span>
+        <span class="me-name">Basilio Montes</span>
+      </a>
+      <nav aria-label="Secciones">
+        <ul>
+          <li><a href="https://basimontes.github.io/#experiencia">Experiencia</a></li>
+          <li><a href="https://basimontes.github.io/#formacion">Formación</a></li>
+          <li><a href="https://basimontes.github.io/#proyectos" aria-current="page">Retos</a></li>
+          <li><a href="https://basimontes.github.io/#aptitudes">Aptitudes</a></li>
+          <li><a href="https://basimontes.github.io/#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+      <a class="btn-linkedin" href="https://www.linkedin.com/in/basilio-montes-castano/" rel="noopener" target="_blank">LinkedIn</a>
+    </div>
+  </header>
+
+  <main class="page">
     <h1>API de reservas de pistas deportivas</h1>
-    <p>Documentación de la especificación OpenAPI 1.3.0. Es una API de práctica para pruebas de contrato; el repositorio con las pruebas y las reglas de negocio está en
-      <a href="https://github.com/BasiMontes/api-contract-tests" rel="noopener">GitHub</a>.</p>
-    <p>Las reglas que OpenAPI no expresa (horario, solapes, límites por usuario y cancelación) están en la sección "Reglas de negocio" del README.</p>
-    <p><strong>Probar desde esta página:</strong> las peticiones de "Try it out" van a <code>http://localhost:3000</code>. Solo funcionan si tienes el servidor levantado en tu equipo (<code>npm run server</code>).</p>
-  </div>
+    <p class="lead">Reto de contrato de API: una API de práctica con su especificación OpenAPI como fuente de verdad, y pruebas que comprueban que el servidor cumple lo que promete.</p>
+    <div class="meta">
+      <span class="pill pill-moss">En curso</span>
+      <span class="pill">OpenAPI 1.3.0</span>
+      <span class="pill">Node 24</span>
+      <span class="pill">Playwright + TypeScript</span>
+    </div>
+    <p class="note">Las reglas que OpenAPI no expresa (horario, solapes, límites por usuario y cancelación) están en la sección "Reglas de negocio" del <a href="https://github.com/BasiMontes/api-contract-tests#reglas-de-negocio" rel="noopener" target="_blank">README</a>, junto con el repositorio de las pruebas.</p>
+    <p class="note"><strong>Probar desde esta página:</strong> "Try it out" envía las peticiones a <code>http://localhost:3000</code>. Solo funciona si tienes el servidor levantado (<code>npm run server</code>).</p>
+  </main>
+
   <div id="swagger-ui"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js" crossorigin></script>
   <script>
     window.addEventListener('load', function () {

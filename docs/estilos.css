@@ -1,0 +1,90 @@
+/* Mismos tokens y tipografía que https://basimontes.github.io para que la documentación parezca parte de la web. */
+:root {
+  --paper: #FFFEF5;
+  --card: #FFFFFF;
+  --ink: #1B2233;
+  --ink-soft: #4A5266;
+  --cobalt: #2340B0;
+  --moss: #2F6B47;
+  --contour: #D8D4BF;
+  --line: #E9E5D3;
+  --wide: 1080px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --radius: 18px;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1.0625rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: var(--cobalt); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { margin: 0; line-height: 1.15; }
+p { margin: 0; }
+
+/* Cabecera: la misma que la web personal */
+.top-bar { position: sticky; top: 0; z-index: 30; background: var(--paper); }
+.top {
+  max-width: var(--wide); margin: 0 auto; padding: 0.9rem var(--gutter);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.me { display: flex; align-items: center; gap: 0.7rem; color: var(--ink); text-decoration: none; font-weight: 700; min-width: 0; }
+.me-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar {
+  position: relative; flex-shrink: 0; width: 2.6rem; height: 2.6rem; border-radius: 50%; overflow: hidden;
+  background: var(--ink); color: var(--paper); display: grid; place-items: center; font-weight: 900; font-size: 0.95rem;
+}
+.avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.top nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 1.4rem; align-items: center; }
+.top nav a { position: relative; padding: 0.35rem 0; color: var(--ink-soft); text-decoration: none; font-weight: 500; }
+.top nav a:hover, .top nav a[aria-current] { color: var(--ink); }
+.top nav a[aria-current]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.2rem; height: 2px; border-radius: 2px; background: var(--ink); }
+.top nav { margin-left: auto; }
+.btn-linkedin {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.95rem;
+  color: var(--ink); text-decoration: none; font-weight: 700;
+  border: 1.5px solid var(--ink); border-radius: 999px; background: var(--card);
+}
+
+/* Contenido */
+.page { max-width: var(--wide); margin: 0 auto; padding: clamp(2.5rem, 6vw, 4rem) var(--gutter) 0; }
+.page h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -0.01em; }
+.page .lead { margin-top: 1rem; max-width: 68ch; color: var(--ink-soft); }
+.page .meta { margin-top: 1.25rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pill {
+  font-size: 0.9rem; padding: 0.3rem 0.85rem; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink-soft);
+}
+.pill-moss { color: var(--moss); font-weight: 700; }
+.note { margin-top: 1.25rem; font-size: 0.98rem; color: var(--ink-soft); max-width: 68ch; }
+code { font-size: 0.92em; background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 0.05rem 0.35rem; }
+
+/* Swagger UI con la tipografía y los colores de la web */
+#swagger-ui { max-width: var(--wide); margin: 2.5rem auto 4rem; padding: 0 var(--gutter); }
+.swagger-ui, .swagger-ui .info .title, .swagger-ui .opblock-tag, .swagger-ui .opblock .opblock-summary-path,
+.swagger-ui .opblock .opblock-summary-description, .swagger-ui table thead tr th, .swagger-ui .responses-inner h4,
+.swagger-ui .responses-inner h5, .swagger-ui .model-title, .swagger-ui .parameter__name, .swagger-ui label {
+  font-family: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.swagger-ui .info .title { color: var(--ink); font-weight: 900; }
+.swagger-ui .opblock-tag { color: var(--ink); border-bottom: 1px solid var(--line); }
+.swagger-ui .opblock-tag small { color: var(--ink-soft); }
+.swagger-ui .opblock { border-radius: var(--radius); border-width: 1px; box-shadow: none; }
+.swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-description { color: var(--ink); }
+.swagger-ui .scheme-container { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: none; }
+.swagger-ui .btn.authorize { color: var(--cobalt); border-color: var(--cobalt); }
+.swagger-ui .btn.authorize svg { fill: var(--cobalt); }
+.swagger-ui a, .swagger-ui .info a { color: var(--cobalt); }
+.swagger-ui .wrapper { padding: 0; }
+.swagger-ui .topbar { display: none; }
+
+@media (max-width: 760px) {
+  .top nav ul { display: none; }
+  .top nav { margin-left: 0; }
+  .btn-linkedin { display: none; }
+}
