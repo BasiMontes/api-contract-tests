@@ -309,13 +309,36 @@ test.describe('Cancelación', () => {
     await esperarError(segunda, 'delete', '/reservas/{id}', 409, 'RESERVATION_NOT_ACTIVE');
   });
 
-  test.fixme(
-    'cancelar una reserva ya empezada devuelve 409 RESERVATION_STARTED',
-    async () => {
-      // Pendiente: el servidor usa el reloj real y no se puede crear una reserva que ya haya empezado.
-      // Para probarlo hace falta un reloj controlable en modo práctica (ver README).
-    },
-  );
+  test('cancelar una reserva ya empezada devuelve 409 RESERVATION_STARTED', async ({ request }) => {
+    const fecha = diaAleatorio();
+    const ana = await crearUsuario(request);
+    const cabecera = { Authorization: `Bearer ${ana.token}` };
+    const creada = await (await reservar(request, ana.token, pistaId(6), fecha, '10:00', '11:00')).json();
+
+    // Justo en el instante de inicio ya cuenta como empezada (inicio <= ahora).
+    const enElInicio = madridISO(fecha, '10:00');
+    const res = await request.delete(`/reservas/${creada.id}`, {
+      headers: { ...cabecera, 'X-Practica-Ahora': enElInicio },
+    });
+    await esperarError(res, 'delete', '/reservas/{id}', 409, 'RESERVATION_STARTED');
+
+    // El intento fallido no debe cambiar la reserva.
+    const consulta = await (await request.get(`/reservas/${creada.id}`, { headers: cabecera })).json();
+    expect(consulta.estado).toBe('activa');
+  });
+
+  test('cancelar una reserva un minuto antes de su inicio sigue permitido (204)', async ({ request }) => {
+    const fecha = diaAleatorio();
+    const ana = await crearUsuario(request);
+    const cabecera = { Authorization: `Bearer ${ana.token}` };
+    const creada = await (await reservar(request, ana.token, pistaId(6), fecha, '10:00', '11:00')).json();
+
+    const unMinutoAntes = new Date(new Date(madridISO(fecha, '10:00')).getTime() - 60000).toISOString();
+    const res = await request.delete(`/reservas/${creada.id}`, {
+      headers: { ...cabecera, 'X-Practica-Ahora': unMinutoAntes },
+    });
+    expect(res.status()).toBe(204);
+  });
 
   test('cancelar la reserva de otro usuario devuelve 404 igual que una inexistente', async ({ request }) => {
     const fecha = diaAleatorio();

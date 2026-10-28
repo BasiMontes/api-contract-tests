@@ -2,7 +2,7 @@
 
 Pruebas de contrato sobre una API de práctica de reservas de pistas deportivas (Node.js + Express + JWT). La especificación en `openapi.yaml` es la fuente de verdad: las pruebas comprueban que el servidor cumple lo que promete.
 
-Estado: especificación 1.3.0, servidor de práctica y 50 pruebas de contrato (49 en verde y 1 pendiente).
+Estado: especificación 1.3.0, servidor de práctica y 51 pruebas de contrato, todas en verde.
 
 ## Reglas de negocio
 
@@ -58,7 +58,7 @@ API_URL=http://otro-host npm test  # prueba contra un servidor ya levantado
 
 - `tests/auth.spec.ts` y `tests/pistas.spec.ts`: contrato de cada operación contra `openapi.yaml`.
 - `tests/reservas.spec.ts`: horario, formato, pasado, solapes, límites por usuario, cancelación, propiedad y autenticación.
-- Una prueba queda como `fixme`: cancelar una reserva ya empezada, que necesita un reloj controlable en el servidor.
+- Modo práctica: con `MODO_PRACTICA=1` el servidor acepta la cabecera `X-Practica-Ahora` (fecha ISO 8601) como hora de referencia para las reglas de pasado y de cancelación. Fuera de ese modo la cabecera se ignora. Las pruebas la usan para probar `RESERVATION_STARTED` sin esperar. No debe activarse en ningún entorno real.
 - `tests/contrato-validador.spec.ts`: comprueba que el validador rechaza lo que debe rechazar.
 
 ## Cómo ejecutar

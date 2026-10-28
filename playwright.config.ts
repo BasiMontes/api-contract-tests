@@ -18,6 +18,6 @@ export default defineConfig({
         command: 'npm run server',
         url: `${baseURL}/pistas`,
         reuseExistingServer: !process.env.CI,
-        env: { PORT: String(port) },
+        env: { PORT: String(port), MODO_PRACTICA: '1' },
       },
 });

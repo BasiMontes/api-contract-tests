@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { createStore, Store } from './store';
 import * as rules from './rules';
+import { ahoraDe } from './reloj';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'solo-para-practica-local';
 const TOKEN_TTL_SECONDS = 3600;
@@ -129,7 +130,7 @@ export function createApp(store: Store = createStore()) {
     const pista = store.pistas.find((p) => p.id === b.pistaId);
     if (!pista) return fail(res, 404, 'NOT_FOUND', 'Pista no encontrada');
 
-    const fallo = rules.evaluarReserva(store, userId, pista.id, inicio, fin, new Date());
+    const fallo = rules.evaluarReserva(store, userId, pista.id, inicio, fin, ahoraDe(req));
     if (fallo) return fail(res, fallo.status, fallo.code, fallo.message);
 
     const reserva = { id: randomUUID(), pistaId: pista.id, usuarioId: userId, inicio, fin, estado: 'activa' as const };
@@ -147,7 +148,7 @@ export function createApp(store: Store = createStore()) {
     if (reserva.estado === 'cancelada') {
       return fail(res, 409, 'RESERVATION_NOT_ACTIVE', 'La reserva ya está cancelada');
     }
-    if (reserva.inicio.getTime() <= Date.now()) {
+    if (reserva.inicio.getTime() <= ahoraDe(req).getTime()) {
       return fail(res, 409, 'RESERVATION_STARTED', 'La reserva ya ha empezado');
     }
     reserva.estado = 'cancelada';
